@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract ProxyContract {
+    address public owner;
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    // 允许合约所有者更改代理目标地址
+    function setProxyTarget(address _target) public {
+        require(msg.sender == owner, "Only owner can call this function");
+        target = _target;
+    }
+
+    // 转发以太币给目标地址
+    function forwardEther() external payable {
+        require(target != address(0), "Proxy target not set");
+        (bool success, ) = target.call{value: msg.value}("");
+        require(success, "Forwarding failed");
+    }
+}
