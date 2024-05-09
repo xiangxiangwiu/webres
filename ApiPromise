@@ -1,0 +1,25 @@
+const { ApiPromise, Keyring } = require('@polkadot/api');
+const { WsProvider } = require('@polkadot/rpc-provider');
+
+async function sendDOT() {
+  const wsProvider = new WsProvider('wss://rpc.polkadot.io');
+
+  const api = await ApiPromise.create({ provider: wsProvider });
+
+  // 用于签名交易的账户
+  const keyring = new Keyring({ type: 'sr25519' });
+  const alice = keyring.addFromUri('//Alice');
+
+  // 接收者地址
+  const recipientAddress = 'YourRecipientAddress';
+
+  // 转账金额（以 DOT 为单位）
+  const amount = 1000000000000; // 1 DOT = 1e12 Planck (最小单位)
+
+  // 构造转账交易
+  const txHash = await api.tx.balances.transfer(recipientAddress, amount).signAndSend(alice);
+
+  console.log('Transfer sent with hash:', txHash.toHex());
+}
+
+sendDOT().catch(console.error);
