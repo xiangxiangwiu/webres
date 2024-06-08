@@ -1,0 +1,41 @@
+import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.ClientTransactionManager;
+import org.web3j.tx.TransactionManager;
+import org.web3j.tx.gas.DefaultGasProvider;
+import org.web3j.tx.response.PollingTransactionReceiptProcessor;
+import org.web3j.tx.response.TransactionReceiptProcessor;
+
+import java.math.BigInteger;
+
+public class SendNFT {
+    private static final String BSC_NODE_URL = "https://bsc-dataseed.binance.org/";
+    private static final String PRIVATE_KEY = "YOUR_PRIVATE_KEY";
+    private static final String SENDER_ADDRESS = "0xYourSenderAddress";
+    private static final String RECIPIENT_ADDRESS = "0xRecipientAddress";
+    private static final String NFT_CONTRACT_ADDRESS = "0xYourNFTContractAddress";
+    private static final BigInteger TOKEN_ID = BigInteger.valueOf(1234);
+
+    public static void main(String[] args) throws Exception {
+        // 连接到 Binance Smart Chain 节点
+        Web3j web3j = Web3j.build(new HttpService(BSC_NODE_URL));
+
+        // 设置交易管理器
+        TransactionManager transactionManager = new ClientTransactionManager(
+                web3j, SENDER_ADDRESS, new PollingTransactionReceiptProcessor(web3j, 1000, 30));
+
+        // 加载 ERC-721 合约
+        ERC721 contract = ERC721.load(NFT_CONTRACT_ADDRESS, web3j, transactionManager, new DefaultGasProvider());
+
+        // 发送 NFT
+        TransactionReceipt transactionReceipt = contract.transferFrom(SENDER_ADDRESS, RECIPIENT_ADDRESS, TOKEN_ID).send();
+
+        // 输出交易哈希
+        System.out.println("NFT 发送成功，交易哈希: " + transactionReceipt.getTransactionHash());
+
+        // 关闭 Web3j 连接
+        web3j.shutdown();
+    }
+}
